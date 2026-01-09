@@ -31,13 +31,11 @@ export function ChatWelcome() {
   // Show chat messages if there are any
   if (messages.length > 0) {
     return (
-      <div className="flex flex-1 flex-col overflow-y-auto">
-        <div className="flex-1">
-          {messages.map((message) => (
-            <ChatMessageComponent key={message.id} message={message} />
-          ))}
-          <div ref={messagesEndRef} />
-        </div>
+      <div className="flex flex-1 flex-col overflow-y-auto bg-background">
+        {messages.map((message) => (
+          <ChatMessageComponent key={message.id} message={message} />
+        ))}
+        <div ref={messagesEndRef} />
       </div>
     )
   }

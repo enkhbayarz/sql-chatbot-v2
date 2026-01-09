@@ -33,8 +33,8 @@ export function ChatInput() {
   }
 
   return (
-    <div className="border-t border-border bg-background p-4">
-      <div className="mx-auto max-w-4xl space-y-4">
+    <div className="border-t border-border/50 bg-background p-6">
+      <div className="mx-auto max-w-3xl space-y-3">
         <form onSubmit={handleSubmit}>
           <div className="relative">
             <Input
@@ -42,13 +42,13 @@ export function ChatInput() {
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={handleKeyDown}
               placeholder="Ask a question about the banking database..."
-              className="pr-12 py-6 text-base"
+              className="pr-12 py-6 text-[15px] rounded-xl border-border/60 focus-visible:ring-1 focus-visible:ring-offset-0 shadow-sm"
               disabled={isLoading}
             />
             <Button
               type="submit"
               size="icon"
-              className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full h-8 w-8"
+              className="absolute right-2 top-1/2 -translate-y-1/2 rounded-lg h-9 w-9"
               disabled={!input.trim() || isLoading}
             >
               {isLoading ? (
@@ -61,11 +61,11 @@ export function ChatInput() {
           </div>
         </form>
 
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
+        <div className="flex items-center justify-between px-1">
+          <div className="flex items-center gap-1">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="sm" className="gap-1">
+                <Button variant="ghost" size="sm" className="gap-1 h-8 text-xs">
                   Gemini
                   <span className="text-muted-foreground">(2.0)</span>
                   <ChevronDown className="h-3 w-3" />
@@ -78,13 +78,13 @@ export function ChatInput() {
               </DropdownMenuContent>
             </DropdownMenu>
 
-            <Button variant="ghost" size="sm" className="gap-1">
-              <Search className="h-4 w-4" />
+            <Button variant="ghost" size="sm" className="gap-1.5 h-8 text-xs">
+              <Search className="h-3.5 w-3.5" />
               Search
             </Button>
 
             <Button variant="ghost" size="icon" className="h-8 w-8">
-              <Paperclip className="h-4 w-4" />
+              <Paperclip className="h-3.5 w-3.5" />
               <span className="sr-only">Attach file</span>
             </Button>
           </div>
