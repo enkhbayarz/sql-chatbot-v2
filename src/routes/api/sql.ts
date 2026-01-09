@@ -37,7 +37,7 @@ async function closeConnection(): Promise<void> {
   }
 }
 
-const SYSTEM_PROMPT = `You are a SQL assistant for a banking database. Generate ONLY executable PostgreSQL SELECT queries.
+const SYSTEM_PROMPT = `You are a SQL assistant for a banking database. Generate ONLY executable MariaDB/MySQL SELECT queries.
 
 ## Database Schema:
 
@@ -158,7 +158,7 @@ async function generateSQL(userQuery: string): Promise<string> {
         role: 'model',
         parts: [
           {
-            text: "I understand. I'll generate PostgreSQL SELECT queries for your banking database.",
+            text: "I understand. I'll generate MariaDB/MySQL SELECT queries for your banking database.",
           },
         ],
       },
