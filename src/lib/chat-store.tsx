@@ -1,11 +1,4 @@
-import {
-  createContext,
-  use,
-  useCallback,
-  useEffect,
-  useMemo,
-  useState,
-} from 'react'
+import { createContext, use, useCallback, useMemo, useState } from 'react'
 import { useMutation, useQuery } from 'convex/react'
 
 import type { ApiResponse, ChatMessage } from '@/types/chat'
@@ -80,11 +73,11 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
   }, [])
 
   // Initialize: create a new conversation if none exists
-  useEffect(() => {
-    if (user?.id && !currentConversationId) {
-      createNewConversation().catch(console.error)
-    }
-  }, [user?.id, currentConversationId, createNewConversation])
+  // useEffect(() => {
+  //   if (user?.id && !currentConversationId) {
+  //     createNewConversation().catch(console.error)
+  //   }
+  // }, [user?.id, currentConversationId, createNewConversation])
 
   const sendMessage = useCallback(
     async (content: string) => {

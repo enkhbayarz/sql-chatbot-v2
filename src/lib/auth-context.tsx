@@ -39,12 +39,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [error, setError] = useState<string | null>(null)
   const [isInitialized, setIsInitialized] = useState(false)
 
-  // Hydrate token from localStorage on client side only
+  // Hydrate token and user from localStorage on client side only
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const storedToken = localStorage.getItem('auth_token')
-      if (storedToken) {
-        setToken(storedToken)
+      const storedUser = localStorage.getItem('auth_user')
+
+      if (storedToken && storedUser) {
+        try {
+          const parsedUser = JSON.parse(storedUser)
+          setToken(storedToken)
+          setUser(parsedUser)
+        } catch (error) {
+          // If parsing fails, clear invalid data
+          localStorage.removeItem('auth_token')
+          localStorage.removeItem('auth_user')
+        }
       }
       setIsInitialized(true)
     } else {
@@ -74,6 +84,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setUser(data.user)
       if (typeof window !== 'undefined') {
         localStorage.setItem('auth_token', data.token)
+        localStorage.setItem('auth_user', JSON.stringify(data.user))
       }
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Login failed'
@@ -119,6 +130,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setUser(data.user)
         if (typeof window !== 'undefined') {
           localStorage.setItem('auth_token', data.token)
+          localStorage.setItem('auth_user', JSON.stringify(data.user))
         }
       } catch (err) {
         const message = err instanceof Error ? err.message : 'Signup failed'
@@ -137,6 +149,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setError(null)
     if (typeof window !== 'undefined') {
       localStorage.removeItem('auth_token')
+      localStorage.removeItem('auth_user')
     }
   }, [])
 
