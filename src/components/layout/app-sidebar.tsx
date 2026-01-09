@@ -178,7 +178,7 @@ export function AppSidebar() {
                       >
                         <button
                           onClick={() => loadConversation(chat._id)}
-                          className="text-sm hover:bg-sidebar-accent rounded-md w-full text-left pr-8 truncate overflow-hidden text-ellipsis whitespace-nowrap"
+                          className="text-sm hover:bg-sidebar-accent rounded-md w-full text-left pr-8 truncate overflow-hidden text-ellipsis whitespace-nowrap cursor-pointer"
                           title={chat.title}
                         >
                           {chat.title}
@@ -188,7 +188,7 @@ export function AppSidebar() {
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
                             <button
-                              className="flex h-6 w-6 items-center justify-center rounded-md hover:bg-sidebar-accent opacity-0 group-hover/menu-item:opacity-100 transition-opacity focus:opacity-100"
+                              className="flex h-6 w-6 items-center justify-center rounded-md hover:bg-sidebar-accent opacity-0 group-hover/menu-item:opacity-100 transition-opacity focus:opacity-100 cursor-pointer"
                               onClick={(e) => e.stopPropagation()}
                               onMouseDown={(e) => e.stopPropagation()}
                             >
@@ -220,32 +220,46 @@ export function AppSidebar() {
       </SidebarContent>
 
       <SidebarFooter className="border-t border-sidebar-border">
-        <div className="p-4 space-y-3">
-          {user && (
-            <div className="flex items-center gap-3 px-2">
-              <Avatar className="h-9 w-9">
-                <AvatarFallback className="bg-primary text-primary-foreground">
-                  {getUserInitials(user.name)}
-                </AvatarFallback>
-              </Avatar>
-              <div className="flex-1 overflow-hidden">
-                <p className="text-sm font-medium truncate">{user.name}</p>
-                <p className="text-xs text-muted-foreground truncate">
+        {user && (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button className="w-full p-4 flex items-center gap-3 hover:bg-sidebar-accent transition-colors cursor-pointer">
+                <Avatar className="h-10 w-10">
+                  <AvatarFallback className="bg-primary text-primary-foreground text-sm font-semibold">
+                    {getUserInitials(user.name)}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="flex-1 overflow-hidden text-left">
+                  <p className="text-sm font-medium text-sidebar-foreground truncate">
+                    {user.name}
+                  </p>
+                  <p className="text-xs text-muted-foreground truncate">
+                    Free plan
+                  </p>
+                </div>
+                <MoreVertical className="h-4 w-4 text-muted-foreground" />
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent
+              align="end"
+              side="top"
+              className="w-64 mb-2"
+            >
+              <div className="px-3 py-2 border-b">
+                <p className="text-sm text-muted-foreground truncate">
                   {user.email}
                 </p>
               </div>
-            </div>
-          )}
-          <Button
-            variant="ghost"
-            className="w-full justify-start"
-            size="lg"
-            onClick={logout}
-          >
-            <LogOut className="mr-2 h-4 w-4" />
-            Logout
-          </Button>
-        </div>
+              <DropdownMenuItem
+                onClick={logout}
+                className="cursor-pointer py-3"
+              >
+                <LogOut className="mr-3 h-4 w-4" />
+                <span>Log out</span>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        )}
       </SidebarFooter>
 
       {/* Delete Confirmation Dialog */}
