@@ -10,13 +10,20 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AuthSignupRouteImport } from './routes/auth/signup'
 import { Route as AuthLoginRouteImport } from './routes/auth/login'
 import { Route as ApiSqlRouteImport } from './routes/api/sql'
+import { Route as ApiAuthSignupRouteImport } from './routes/api/auth/signup'
 import { Route as ApiAuthLoginRouteImport } from './routes/api/auth/login'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthSignupRoute = AuthSignupRouteImport.update({
+  id: '/auth/signup',
+  path: '/auth/signup',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthLoginRoute = AuthLoginRouteImport.update({
@@ -29,6 +36,11 @@ const ApiSqlRoute = ApiSqlRouteImport.update({
   path: '/api/sql',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiAuthSignupRoute = ApiAuthSignupRouteImport.update({
+  id: '/api/auth/signup',
+  path: '/api/auth/signup',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiAuthLoginRoute = ApiAuthLoginRouteImport.update({
   id: '/api/auth/login',
   path: '/api/auth/login',
@@ -39,34 +51,61 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/api/sql': typeof ApiSqlRoute
   '/auth/login': typeof AuthLoginRoute
+  '/auth/signup': typeof AuthSignupRoute
   '/api/auth/login': typeof ApiAuthLoginRoute
+  '/api/auth/signup': typeof ApiAuthSignupRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/api/sql': typeof ApiSqlRoute
   '/auth/login': typeof AuthLoginRoute
+  '/auth/signup': typeof AuthSignupRoute
   '/api/auth/login': typeof ApiAuthLoginRoute
+  '/api/auth/signup': typeof ApiAuthSignupRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/api/sql': typeof ApiSqlRoute
   '/auth/login': typeof AuthLoginRoute
+  '/auth/signup': typeof AuthSignupRoute
   '/api/auth/login': typeof ApiAuthLoginRoute
+  '/api/auth/signup': typeof ApiAuthSignupRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/api/sql' | '/auth/login' | '/api/auth/login'
+  fullPaths:
+    | '/'
+    | '/api/sql'
+    | '/auth/login'
+    | '/auth/signup'
+    | '/api/auth/login'
+    | '/api/auth/signup'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/api/sql' | '/auth/login' | '/api/auth/login'
-  id: '__root__' | '/' | '/api/sql' | '/auth/login' | '/api/auth/login'
+  to:
+    | '/'
+    | '/api/sql'
+    | '/auth/login'
+    | '/auth/signup'
+    | '/api/auth/login'
+    | '/api/auth/signup'
+  id:
+    | '__root__'
+    | '/'
+    | '/api/sql'
+    | '/auth/login'
+    | '/auth/signup'
+    | '/api/auth/login'
+    | '/api/auth/signup'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   ApiSqlRoute: typeof ApiSqlRoute
   AuthLoginRoute: typeof AuthLoginRoute
+  AuthSignupRoute: typeof AuthSignupRoute
   ApiAuthLoginRoute: typeof ApiAuthLoginRoute
+  ApiAuthSignupRoute: typeof ApiAuthSignupRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -76,6 +115,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/auth/signup': {
+      id: '/auth/signup'
+      path: '/auth/signup'
+      fullPath: '/auth/signup'
+      preLoaderRoute: typeof AuthSignupRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/auth/login': {
@@ -92,6 +138,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiSqlRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/auth/signup': {
+      id: '/api/auth/signup'
+      path: '/api/auth/signup'
+      fullPath: '/api/auth/signup'
+      preLoaderRoute: typeof ApiAuthSignupRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/auth/login': {
       id: '/api/auth/login'
       path: '/api/auth/login'
@@ -106,7 +159,9 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   ApiSqlRoute: ApiSqlRoute,
   AuthLoginRoute: AuthLoginRoute,
+  AuthSignupRoute: AuthSignupRoute,
   ApiAuthLoginRoute: ApiAuthLoginRoute,
+  ApiAuthSignupRoute: ApiAuthSignupRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

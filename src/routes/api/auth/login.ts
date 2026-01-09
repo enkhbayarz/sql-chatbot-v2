@@ -1,7 +1,7 @@
 import { createFileRoute } from '@tanstack/react-router'
 
 import { signJWT } from '@/lib/auth/jwt'
-import { validateCredentials } from '@/lib/auth/mock-store'
+import { validateCredentials } from '@/lib/auth/convex-store'
 
 export const Route = createFileRoute('/api/auth/login')({
   server: {
@@ -17,8 +17,8 @@ export const Route = createFileRoute('/api/auth/login')({
             )
           }
 
-          // Validate credentials against mock store
-          const user = validateCredentials(email, password)
+          // Validate credentials against Convex
+          const user = await validateCredentials(email, password)
 
           if (!user) {
             return Response.json(
@@ -46,7 +46,11 @@ export const Route = createFileRoute('/api/auth/login')({
           })
         } catch (error) {
           return Response.json(
-            { error: 'Login failed: ' + (error instanceof Error ? error.message : 'Unknown error') },
+            {
+              error:
+                'Login failed: ' +
+                (error instanceof Error ? error.message : 'Unknown error'),
+            },
             { status: 500 },
           )
         }

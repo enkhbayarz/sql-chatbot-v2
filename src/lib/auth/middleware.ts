@@ -1,6 +1,6 @@
 import type { User, UserPermissions } from './types'
 import { verifyJWT } from './jwt'
-import { MOCK_USERS } from './mock-store'
+import { getUserById } from './convex-store'
 import { PermissionResolver } from './permission-resolver'
 
 /**
@@ -37,8 +37,8 @@ export async function withAuth(
     // Step 2: Verify JWT and decode payload
     const payload = await verifyJWT(token)
 
-    // Step 3: Load user from store
-    const user = MOCK_USERS.get(payload.userId)
+    // Step 3: Load user from Convex
+    const user = await getUserById(payload.userId)
     if (!user || !user.isActive) {
       return Response.json(
         { error: 'User not found or inactive' },
@@ -47,14 +47,18 @@ export async function withAuth(
     }
 
     // Step 4: Resolve user permissions
-    const permissions = PermissionResolver.resolvePermissions(user)
+    const permissions = await PermissionResolver.resolvePermissions(user)
 
     // Step 5: Call the actual handler with user context
     return await handler(request, user, permissions)
   } catch (error) {
     // JWT verification failed (expired or invalid)
     return Response.json(
-      { error: 'Authentication failed: ' + (error instanceof Error ? error.message : 'Unknown error') },
+      {
+        error:
+          'Authentication failed: ' +
+          (error instanceof Error ? error.message : 'Unknown error'),
+      },
       { status: 401 },
     )
   }

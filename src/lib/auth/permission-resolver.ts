@@ -1,5 +1,6 @@
 import type { User, UserPermissions } from './types'
-import { ALL_TABLES, MOCK_DEPARTMENTS, MOCK_ROLES } from './mock-store'
+import { ALL_TABLES } from './convex-store'
+import { getAllRoles, getAllDepartments } from './convex-store'
 
 /**
  * Permission Resolver
@@ -13,10 +14,14 @@ export class PermissionResolver {
   /**
    * Resolve all permissions for a user
    */
-  static resolvePermissions(user: User): UserPermissions {
+  static async resolvePermissions(user: User): Promise<UserPermissions> {
+    // Get roles and departments from Convex
+    const rolesMap = await getAllRoles()
+    const departmentsMap = await getAllDepartments()
+
     // Check if user is admin (bypass all permission checks)
     const roles = user.roleIds
-      .map((id) => MOCK_ROLES.get(id))
+      .map((id) => rolesMap.get(id))
       .filter((role) => role !== undefined)
 
     const isAdmin = roles.some((r) => r.name === 'Admin')
@@ -36,7 +41,7 @@ export class PermissionResolver {
     let maxRowLimit = 100 // Default row limit
 
     // Step 1: Add department default permissions
-    const department = MOCK_DEPARTMENTS.get(user.departmentId)
+    const department = departmentsMap.get(user.departmentId)
     if (department) {
       if (department.allowedTables.includes('*')) {
         ALL_TABLES.forEach((t) => allowed.add(t))

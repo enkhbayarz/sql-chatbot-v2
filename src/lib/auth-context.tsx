@@ -17,6 +17,13 @@ interface AuthContextType {
   user: User | null
   token: string | null
   login: (email: string, password: string) => Promise<void>
+  signup: (
+    email: string,
+    password: string,
+    name: string,
+    roleIds: string[],
+    departmentId: string,
+  ) => Promise<void>
   logout: () => void
   isLoading: boolean
   error: string | null
@@ -77,6 +84,53 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, [])
 
+  const signup = useCallback(
+    async (
+      email: string,
+      password: string,
+      name: string,
+      roleIds: string[],
+      departmentId: string,
+    ) => {
+      setIsLoading(true)
+      setError(null)
+
+      try {
+        const response = await fetch('/api/auth/signup', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            email,
+            password,
+            name,
+            roleIds,
+            departmentId,
+          }),
+        })
+
+        const data = await response.json()
+
+        if (!response.ok) {
+          throw new Error(data.error || 'Signup failed')
+        }
+
+        // Store token and user
+        setToken(data.token)
+        setUser(data.user)
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('auth_token', data.token)
+        }
+      } catch (err) {
+        const message = err instanceof Error ? err.message : 'Signup failed'
+        setError(message)
+        throw err
+      } finally {
+        setIsLoading(false)
+      }
+    },
+    [],
+  )
+
   const logout = useCallback(() => {
     setUser(null)
     setToken(null)
@@ -91,12 +145,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       user,
       token,
       login,
+      signup,
       logout,
       isLoading,
       error,
       isInitialized,
     }),
-    [user, token, login, logout, isLoading, error, isInitialized],
+    [user, token, login, signup, logout, isLoading, error, isInitialized],
   )
 
   return <AuthContext value={value}>{children}</AuthContext>

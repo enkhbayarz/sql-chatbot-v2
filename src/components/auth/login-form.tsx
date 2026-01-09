@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useNavigate } from '@tanstack/react-router'
+import { useNavigate, Link } from '@tanstack/react-router'
 
 import { useAuth } from '@/lib/auth-context'
 import { Button } from '@/components/ui/button'
@@ -78,7 +78,17 @@ export function LoginForm() {
             {isLoading ? 'Logging in...' : 'Login'}
           </Button>
 
-          <div className="pt-4 text-sm text-muted-foreground">
+          <div className="text-center text-sm text-muted-foreground">
+            Don't have an account?{' '}
+            <Link
+              to="/auth/signup"
+              className="text-primary underline-offset-4 hover:underline"
+            >
+              Sign up
+            </Link>
+          </div>
+
+          <div className="pt-4 text-sm text-muted-foreground border-t">
             <p className="font-medium">Test Accounts:</p>
             <ul className="mt-2 space-y-1 text-xs">
               <li>admin@bank.com / admin123</li>

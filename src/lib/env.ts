@@ -11,6 +11,7 @@ interface EnvConfig {
   DB_PASSWORD: string
   DB_NAME: string
   JWT_SECRET: string
+  CONVEX_URL?: string // Optional for now, will be required later
 }
 
 function validateEnv(): EnvConfig {
@@ -60,6 +61,7 @@ function validateEnv(): EnvConfig {
     DB_PASSWORD: process.env.DB_PASSWORD!,
     DB_NAME: process.env.DB_NAME!,
     JWT_SECRET: process.env.JWT_SECRET!,
+    CONVEX_URL: process.env.CONVEX_URL,
   }
 }
 
