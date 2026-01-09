@@ -2,16 +2,21 @@ import { createFileRoute } from '@tanstack/react-router'
 import { GoogleGenerativeAI } from '@google/generative-ai'
 import mysql, { Connection, RowDataPacket } from 'mysql2/promise'
 
+import { env } from '@/lib/env'
+import { withAuth } from '@/lib/auth/middleware'
+import { PermissionResolver } from '@/lib/auth/permission-resolver'
+import { extractTablesFromSQL } from '@/lib/auth/sql-parser'
+
 // Configure Gemini
-const genai = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!)
+const genai = new GoogleGenerativeAI(env.GEMINI_API_KEY)
 
 // MySQL Database Configuration
 const dbConfig = {
-  host: process.env.DB_HOST || 'relational.fel.cvut.cz',
-  port: parseInt(process.env.DB_PORT || '3306'),
-  user: process.env.DB_USER || 'guest',
-  password: process.env.DB_PASSWORD || 'ctu-relational',
-  database: process.env.DB_NAME || 'financial',
+  host: env.DB_HOST,
+  port: env.DB_PORT,
+  user: env.DB_USER,
+  password: env.DB_PASSWORD,
+  database: env.DB_NAME,
 }
 
 let connection: Connection | null = null
@@ -20,11 +25,10 @@ let connection: Connection | null = null
 async function connectToDatabase(): Promise<Connection> {
   try {
     connection = await mysql.createConnection(dbConfig)
-    console.log('✅ Successfully connected to MySQL database')
     return connection
   } catch (error: any) {
-    console.error('❌ Error connecting to database:', error.message)
-    throw error
+    console.error('[DB Error] Failed to connect:', error.message)
+    throw new Error('Database connection failed')
   }
 }
 
@@ -33,7 +37,6 @@ async function closeConnection(): Promise<void> {
   if (connection) {
     await connection.end()
     connection = null
-    console.log('👋 Database connection closed.')
   }
 }
 
@@ -81,56 +84,81 @@ export const Route = createFileRoute('/api/sql')({
   server: {
     handlers: {
       POST: async ({ request }) => {
-        const { prompt } = await request.json()
+        return withAuth(request, async (req, user, permissions) => {
+          const { prompt } = await req.json()
 
-        if (!prompt) {
-          return Response.json({ error: 'Missing prompt' }, { status: 400 })
-        }
+          if (!prompt) {
+            return Response.json({ error: 'Missing prompt' }, { status: 400 })
+          }
 
-        try {
-          const result = await processQuery(prompt)
-          return Response.json(result)
-        } catch (error: any) {
-          return Response.json(
-            { error: error.message || 'An error occurred' },
-            { status: 500 },
-          )
-        } finally {
-          await closeConnection()
-        }
+          try {
+            // Get allowed tables for this user
+            const allowedTables = Array.from(permissions.allowedTables)
+
+            // Inject allowed tables into Gemini prompt
+            const enhancedPrompt = `
+IMPORTANT SECURITY CONSTRAINT:
+You can ONLY query these tables: ${allowedTables.join(', ')}
+Do NOT reference any other tables. If the user asks for data from unauthorized tables, politely explain you cannot access those tables.
+
+User Query: ${prompt}
+            `.trim()
+
+            // Generate SQL with permissions injected
+            const sql = await generateSQL(enhancedPrompt)
+
+            // Extract tables from generated SQL
+            const usedTables = extractTablesFromSQL(sql)
+
+            // Validate table permissions
+            const validation = PermissionResolver.canAccessTables(
+              permissions,
+              usedTables,
+            )
+
+            if (!validation.allowed) {
+              // Log security violation
+              console.error(
+                `[Auth] Access denied: ${user.email} tried to access: ${validation.deniedTables.join(', ')}`,
+              )
+
+              return Response.json(
+                {
+                  sql,
+                  results: null,
+                  error: `Access denied to tables: ${validation.deniedTables.join(', ')}. You can only access: ${allowedTables.join(', ')}`,
+                },
+                { status: 403 },
+              )
+            }
+
+            // Execute the query
+            const results = await executeQueryAndReturn(sql)
+
+            return Response.json({
+              sql,
+              results,
+              error: null,
+            })
+          } catch (error: any) {
+            console.error('[API Error]:', error.message)
+            return Response.json(
+              {
+                sql: null,
+                results: null,
+                error: error.message || 'An error occurred',
+              },
+              { status: 500 },
+            )
+          } finally {
+            await closeConnection()
+          }
+        })
       },
     },
   },
 })
 
-async function processQuery(userQuery: string) {
-  console.log(`\n🤖 Generating SQL for: ${userQuery}\n`)
-
-  // Step 1: Generate SQL using Gemini
-  const sql = await generateSQL(userQuery)
-
-  console.log('📝 Generated SQL:')
-  console.log('-'.repeat(60))
-  console.log(sql)
-  console.log('-'.repeat(60))
-
-  // Step 2: Execute the query
-  try {
-    const results = await executeQueryAndReturn(sql)
-    return {
-      sql,
-      results,
-      error: null,
-    }
-  } catch (error: any) {
-    console.error(`❌ Query execution error: ${error.message}`)
-    return {
-      sql,
-      results: null,
-      error: error.message,
-    }
-  }
-}
 
 function cleanSQL(sqlString: string): string {
   // Remove markdown code block syntax
@@ -166,7 +194,7 @@ async function generateSQL(userQuery: string): Promise<string> {
   })
 
   const result = await chat.sendMessage(userQuery)
-  const response = await result.response
+  const response = result.response
   const rawSQL = response.text().trim()
 
   // Clean the SQL to remove markdown formatting
@@ -175,14 +203,6 @@ async function generateSQL(userQuery: string): Promise<string> {
 
 async function executeQueryAndReturn(sqlQuery: string): Promise<any[]> {
   const conn = await connectToDatabase()
-
   const [rows] = await conn.execute<RowDataPacket[]>(sqlQuery)
-
-  if (rows.length === 0) {
-    console.log('\n📊 No results found.')
-    return []
-  }
-
-  console.log(`\n📈 Total rows: ${rows.length}`)
   return rows
 }

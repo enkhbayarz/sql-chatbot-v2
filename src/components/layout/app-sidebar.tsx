@@ -1,4 +1,4 @@
-import { LogIn, Menu, Plus, Search } from 'lucide-react'
+import { LogOut, Menu, Plus, Search } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -13,6 +13,8 @@ import {
   SidebarTrigger,
 } from '@/components/ui/sidebar'
 import { useChat } from '@/lib/chat-store'
+import { useAuth } from '@/lib/auth-context'
+import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 
 // Mock data for chat history
 const chatHistory = [
@@ -31,6 +33,17 @@ const chatHistory = [
 
 export function AppSidebar() {
   const { clearMessages } = useChat()
+  const { user, logout } = useAuth()
+
+  // Get user initials for avatar
+  const getUserInitials = (name: string) => {
+    return name
+      .split(' ')
+      .map((n) => n[0])
+      .join('')
+      .toUpperCase()
+      .slice(0, 2)
+  }
 
   return (
     <Sidebar>
@@ -90,10 +103,30 @@ export function AppSidebar() {
       </SidebarContent>
 
       <SidebarFooter className="border-t border-sidebar-border">
-        <div className="p-4">
-          <Button variant="ghost" className="w-full justify-start" size="lg">
-            <LogIn className="mr-2 h-4 w-4" />
-            Login
+        <div className="p-4 space-y-3">
+          {user && (
+            <div className="flex items-center gap-3 px-2">
+              <Avatar className="h-9 w-9">
+                <AvatarFallback className="bg-primary text-primary-foreground">
+                  {getUserInitials(user.name)}
+                </AvatarFallback>
+              </Avatar>
+              <div className="flex-1 overflow-hidden">
+                <p className="text-sm font-medium truncate">{user.name}</p>
+                <p className="text-xs text-muted-foreground truncate">
+                  {user.email}
+                </p>
+              </div>
+            </div>
+          )}
+          <Button
+            variant="ghost"
+            className="w-full justify-start"
+            size="lg"
+            onClick={logout}
+          >
+            <LogOut className="mr-2 h-4 w-4" />
+            Logout
           </Button>
         </div>
       </SidebarFooter>

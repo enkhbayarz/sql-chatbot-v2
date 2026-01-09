@@ -28,14 +28,32 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
     setIsLoading(true)
 
     try {
-      // Call API
+      // Get JWT token from localStorage
+      const token =
+        typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null
+      if (!token) {
+        throw new Error('Not authenticated. Please login.')
+      }
+
+      // Call API with JWT token
       const response = await fetch('/api/sql', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({ prompt: content }),
       })
+
+      // Handle authentication errors
+      if (response.status === 401) {
+        // Token expired or invalid - redirect to login
+        if (typeof window !== 'undefined') {
+          localStorage.removeItem('auth_token')
+          window.location.href = '/auth/login'
+        }
+        return
+      }
 
       const data: ApiResponse = await response.json()
 
@@ -43,9 +61,12 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
       const assistantMessage: ChatMessage = {
         id: crypto.randomUUID(),
         type: 'assistant',
-        content: data.error
-          ? 'I encountered an error while processing your request.'
-          : 'Here are the results of your query:',
+        content:
+          response.status === 403
+            ? '🔒 Access Denied'
+            : data.error
+              ? 'I encountered an error while processing your request.'
+              : 'Here are the results of your query:',
         timestamp: new Date(),
         sql: data.sql,
         results: data.results || undefined,

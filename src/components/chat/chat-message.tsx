@@ -41,7 +41,12 @@ export function ChatMessageComponent({ message }: ChatMessageProps) {
         {/* Error */}
         {message.error && (
           <Alert variant="destructive">
-            <AlertDescription>{message.error}</AlertDescription>
+            <AlertDescription>
+              {message.error.includes('Access denied') ||
+              message.error.includes('🔒')
+                ? `🔒 ${message.error.replace('🔒', '').trim()}`
+                : message.error}
+            </AlertDescription>
           </Alert>
         )}
 

@@ -61,6 +61,8 @@ export function ThemeProvider({
 
   // Listen for system preference changes
   useEffect(() => {
+    if (typeof window === 'undefined') return
+
     const media = window.matchMedia(MEDIA)
 
     media.addEventListener('change', handleMediaQuery)
@@ -70,6 +72,8 @@ export function ThemeProvider({
   }, [handleMediaQuery])
 
   useEffect(() => {
+    if (typeof window === 'undefined') return
+
     const root = window.document.documentElement
 
     let targetTheme: string

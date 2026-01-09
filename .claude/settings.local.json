@@ -4,7 +4,11 @@
       "Bash(pnpm dlx:*)",
       "Bash(pnpm lint:*)",
       "Bash(pnpm check:*)",
-      "Bash(pnpm exec tsc:*)"
+      "Bash(pnpm exec tsc:*)",
+      "Bash(find:*)",
+      "Bash(pnpm add:*)",
+      "Bash(pnpm build:*)",
+      "Bash(tree:*)"
     ]
   }
 }
